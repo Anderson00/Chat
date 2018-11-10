@@ -1,0 +1,42 @@
+/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+
+/* JFXDialogLayout */
+
+.big-decimal-field{
+	-fx-background-color:#000;
+}
+
+.big-decimal-field .arrow-button-up,.arrow-button-down{
+	-fx-background-color:#000
+}
+
+.big-decimal-field .spinner-arrow-up,.spinner-arrow-down{
+	-fx-stroke:green;
+}
+
+.big-decimal-field .arrow-button-up:pressed,.arrow-button-down:pressed{
+	-fx-background-color:#333;
+}
+
+.jfx-dialog-layout {
+	-fx-background-color:#000;
+}
+
+.jfx-dailog-layout .title .text {
+	-fx-fill: green;
+	-fx-text-fill:green;
+}
+
+.jfx-text-field {
+	-fx-text-fill:#fff;
+}
+
+.selecionado {
+	-fx-background-color:#000;
+}
+
+.nao-selecionado {
+	-fx-background-color: #111; 
+	-fx-border-color: #000; 
+	-fx-border-width: 1px;
+}

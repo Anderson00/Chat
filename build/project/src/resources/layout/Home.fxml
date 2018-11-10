@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.effect.ColorAdjust?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+
+<StackPane fx:id="stackPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="396.0" prefWidth="613.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.HomeControllerView">
+   <children>
+      <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" style="-fx-background-color: #0000;" stylesheets="@../style/main.css">
+         <top>
+            <HBox BorderPane.alignment="CENTER">
+               <children>
+                  <MenuBar stylesheets="@../style/menu.css" HBox.hgrow="ALWAYS">
+                     <menus>
+                        <Menu mnemonicParsing="false" text="File">
+                           <items>
+                              <MenuItem mnemonicParsing="false" text="Close" />
+                           </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="View">
+                           <items>
+                              <MenuItem mnemonicParsing="false" text="Delete" />
+                           </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Help">
+                           <items>
+                              <MenuItem mnemonicParsing="false" text="About" />
+                           </items>
+                        </Menu>
+                     </menus>
+                  </MenuBar>
+               </children>
+            </HBox>
+         </top>
+         <center>
+            <SplitPane fx:id="splitPane" dividerPositions="0.29431438127090304" prefHeight="160.0" prefWidth="200.0" style="-fx-background-color: #000;" BorderPane.alignment="CENTER">
+               <items>
+                  <BorderPane prefHeight="200.0" prefWidth="200.0">
+                     <bottom>
+                        <ToolBar prefHeight="40.0" BorderPane.alignment="CENTER">
+                           <items>
+                              <JFXButton fx:id="btNewContact" prefHeight="25.0" prefWidth="60.0" style="-fx-background-color: rgba(200,0,0,0.1);" text="New" textFill="RED" />
+                           </items>
+                        </ToolBar>
+                     </bottom>
+                     <center>
+                        <ListView fx:id="contactList" prefHeight="200.0" prefWidth="337.0" style="-fx-padding: 0;" BorderPane.alignment="CENTER" />
+                     </center>
+                  </BorderPane>
+                  <BorderPane prefHeight="200.0" prefWidth="200.0">
+                     <bottom>
+                        <HBox BorderPane.alignment="CENTER">
+                           <children>
+                              <JFXButton fx:id="btAddImage" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: rgba(200,0,0,0.1);" textFill="RED">
+                                 <graphic>
+                                    <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../img/icon-image-128.png" />
+                                       </image>
+                                       <effect>
+                                          <ColorAdjust brightness="1.0" />
+                                       </effect>
+                                    </ImageView>
+                                 </graphic>
+                                 <padding>
+                                    <Insets left="5.0" right="5.0" />
+                                 </padding>
+                              </JFXButton>
+                              <TextField fx:id="msgField" prefHeight="40.0" promptText="&lt;message&gt;" HBox.hgrow="ALWAYS" />
+                              <JFXButton fx:id="btSendMsg" minWidth="43.0" prefHeight="40.0" prefWidth="68.0" style="-fx-background-color: rgba(200,0,0,0.1);" text="Send" textFill="RED" />
+                           </children>
+                        </HBox>
+                     </bottom>
+                     <center>
+                        <StackPane fx:id="rootMessages" style="-fx-background-color: #222;" stylesheets="@../style/listView.css" BorderPane.alignment="CENTER" />
+                     </center>
+                  </BorderPane>
+               </items>
+            </SplitPane>
+         </center>
+      </BorderPane>
+   </children>
+</StackPane>

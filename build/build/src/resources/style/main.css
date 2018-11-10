@@ -1,0 +1,120 @@
+.split-pane .split-pane-divider {-fx-background-color:green; -fx-padding:0px 0.05em 0px 0.05em}
+.split-pane:vertical {-fx-background-color:black}
+.titled-pane:collapsed .title {-fx-background-color: black;}
+.titled-pane:collapsed .title .text {-fx-fill:green}
+.titled-pane:collapsed .arrow-button .arrow {-fx-background-color:green}
+.titled-pane:expanded .title {-fx-background-color:black;}
+.titled-pane:expanded .title .text {-fx-fill:green}
+.titled-pane:collapsed .arrow-button .arrow {-fx-background-color:green; -fx-effect: none;}
+.titled-pane:expanded .content {-fx-background-color:#111; -fx-border-color:none}
+
+
+.big-decimal-field{
+	-fx-background-color:#000;
+}
+
+.big-decimal-field .arrow-button-up,.arrow-button-down{
+	-fx-background-color:#000
+}
+
+.big-decimal-field .spinner-arrow-up,.spinner-arrow-down{
+	-fx-stroke:green;
+}
+
+.big-decimal-field .arrow-button-up:pressed,.arrow-button-down:pressed{
+	-fx-background-color:#333;
+}
+
+
+/* ListView */
+.list-view {
+	-fx-background-color:#222;
+}
+
+.list-view .list-cell{
+	-fx-padding:0;
+}
+
+.list-view .list-cell:even{
+	-fx-background-color:rgba(0,0,0,0.0);
+}
+
+.list-view .list-cell:odd{
+	-fx-background-color:rgba(0,0,0,0.0);
+}
+
+.list-view .list-cell:focused {
+	-fx-background-color:#222;
+}
+
+.list-view .list-cell .text {
+	/*-fx-fill:green;*/
+}
+/* FIM */
+
+/* TabPane style */
+
+.tab-pane:top .tab-header-area .tab-header-background { -fx-background-color: #222}
+.tab-pane:top .tab-header-area .headers-region .tab { -fx-background-color: #444}
+
+.tab-pane:top .tab-header-area .headers-region .tab{
+    -fx-background-insets: 0 1 0 1,0,0;
+}
+
+.tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.tab-pane:top .tab-header-area .headers-region .tab:selected
+{
+    /*-fx-background-color: #3c3c3c;*/
+    -fx-background-color:#111;
+}
+
+.tab-pane:top .tab-header-area .headers-region .tab .text {-fx-fill:#fff}
+
+.virtual-flow .corner {
+	-fx-background-color:#000;
+}
+
+.virtual-flow > .scroll-bar >.thumb{
+	-fx-background-color:green;
+}
+
+.scroll-bar{
+	-fx-pref-width:10px;
+}
+
+
+.scroll-bar .track {
+	-fx-background-color:#000;
+}
+
+.scroll-bar .decrement-button,.increment-button {
+	-fx-base: green;
+	-fx-background-color:#000;
+	-fx-background-insets: 0;
+}
+
+.scroll-bar .decrement-button .decrement-arrow, .increment-button .increment-arrow{
+	-fx-background-color:green;
+}
+
+/*Scroll-pane */
+.scroll-pane, .scroll-pane > .viewport{
+	-fx-background-color:#000;
+}
+
+
+/* Tool-bar */
+.tool-bar {
+	-fx-background-color:#000;
+}
+
+/* Text-field */
+.text-field {
+	-fx-background-color:#000;
+	-fx-prompt-text-fill:green;
+	-fx-text-fill:green;
+}

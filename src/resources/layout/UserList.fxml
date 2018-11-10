@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+
+<HBox fx:id="root" alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" styleClass="nao-selecionado" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ContactController">
+   <children>
+      <StackPane fx:id="stackPane1" prefHeight="50.0" prefWidth="28.0">
+         <children>
+            <Circle fx:id="conectionStatus" fill="RED" radius="4.0" stroke="TRANSPARENT" strokeType="INSIDE" />
+         </children>
+      </StackPane>
+      <StackPane fx:id="stackPane2" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+         <children>
+            <VBox alignment="CENTER_LEFT" StackPane.alignment="CENTER_LEFT">
+               <children>
+                  <Label fx:id="usernameLB" alignment="CENTER" text="Nome do usuario" textFill="WHITE">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="userStatusLB" text="Status do usuario" textFill="#aeaeae">
+                     <padding>
+                        <Insets left="10.0" />
+                     </padding>
+                     <VBox.margin>
+                        <Insets top="-4.0" />
+                     </VBox.margin>
+                  </Label>
+               </children>
+            </VBox>
+         </children>
+      </StackPane>
+      <StackPane prefHeight="50.0" prefWidth="29.0">
+         <children>
+            <ImageView fx:id="removeContact" fitHeight="20.0" fitWidth="20.0">
+               <image>
+                  <Image url="@../img/Remove_font_awesome.svg.png" />
+               </image>
+            </ImageView>
+         </children>
+      </StackPane>
+   </children>
+</HBox>
