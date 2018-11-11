@@ -184,6 +184,7 @@ public class HomeControllerView {
     	title.setFont(new Font(14));
     	title.setFill(Color.GREEN);
     	    	
+    	
     	HBox box = new HBox(nameField,portField);
     	box.setPadding(new Insets(10, 0, 0, 0));
     	box.setSpacing(10);

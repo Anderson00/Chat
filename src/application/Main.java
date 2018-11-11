@@ -1,5 +1,5 @@
 package application;
-	
+
 import java.io.File;
 
 import controllers.HomeControllerView;
@@ -8,13 +8,19 @@ import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 
 
 public class Main extends Application {
+	
+	
 	@Override
 	public void start(Stage primaryStage) {
-		try {		
+		try {
+			
+			System.out.println("ewewe");
+			
 			//carrega FX xml da interfaçe principal
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/layout/Home.fxml"));
 			StackPane root = loader.load();
@@ -45,7 +51,7 @@ public class Main extends Application {
         while (jarFile.getPath().contains(".jar"))
             jarFile = jarFile.getParentFile();
         return jarFile.getPath().substring(6);
-}
+    }
    /**
      * Return the instalation path of any class.
      * 
