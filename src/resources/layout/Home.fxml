@@ -2,10 +2,9 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import javafx.geometry.Insets?>
+<?import javafx.geometry.Rectangle2D?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToolBar?>
@@ -15,35 +14,12 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
 
-<StackPane fx:id="stackPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="396.0" prefWidth="613.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.HomeControllerView">
+<StackPane fx:id="stackPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="396.0" prefWidth="613.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.HomeControllerView">
    <children>
       <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" style="-fx-background-color: #0000;" stylesheets="@../style/main.css">
-         <top>
-            <HBox BorderPane.alignment="CENTER">
-               <children>
-                  <MenuBar stylesheets="@../style/menu.css" HBox.hgrow="ALWAYS">
-                     <menus>
-                        <Menu mnemonicParsing="false" text="File">
-                           <items>
-                              <MenuItem mnemonicParsing="false" text="Close" />
-                           </items>
-                        </Menu>
-                        <Menu mnemonicParsing="false" text="View">
-                           <items>
-                              <MenuItem mnemonicParsing="false" text="Delete" />
-                           </items>
-                        </Menu>
-                        <Menu mnemonicParsing="false" text="Help">
-                           <items>
-                              <MenuItem mnemonicParsing="false" text="About" />
-                           </items>
-                        </Menu>
-                     </menus>
-                  </MenuBar>
-               </children>
-            </HBox>
-         </top>
          <center>
             <SplitPane fx:id="splitPane" dividerPositions="0.29431438127090304" prefHeight="160.0" prefWidth="200.0" style="-fx-background-color: #000;" BorderPane.alignment="CENTER">
                <items>
@@ -52,12 +28,50 @@
                         <ToolBar prefHeight="40.0" BorderPane.alignment="CENTER">
                            <items>
                               <JFXButton fx:id="btNewContact" prefHeight="25.0" prefWidth="60.0" style="-fx-background-color: rgba(200,0,0,0.1);" text="New" textFill="RED" />
+                              <JFXButton fx:id="btAddContact" prefHeight="25.0" prefWidth="60.0" style="-fx-background-color: rgba(200,0,0,0.1);" text="Add" textFill="RED" />
                            </items>
                         </ToolBar>
                      </bottom>
                      <center>
                         <ListView fx:id="contactList" prefHeight="200.0" prefWidth="337.0" style="-fx-padding: 0;" BorderPane.alignment="CENTER" />
                      </center>
+                     <top>
+                        <VBox BorderPane.alignment="CENTER">
+                           <children>
+                              <HBox prefHeight="45.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <ToolBar maxHeight="-Infinity" prefHeight="45.0" HBox.hgrow="ALWAYS">
+                                       <items>
+                                          <ImageView fitHeight="30.0" fitWidth="86.0" pickOnBounds="true" preserveRatio="true">
+                                             <viewport>
+                                                <Rectangle2D />
+                                             </viewport>
+                                             <image>
+                                                <Image url="@../img/user-compte.png" />
+                                             </image>
+                                          </ImageView>
+                                          <VBox prefHeight="0.0" prefWidth="100.0">
+                                             <children>
+                                                <Label fx:id="userName" text="Label" textFill="WHITE" />
+                                                <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                                                   <children>
+                                                      <Circle fill="#03e103" radius="5.0" stroke="BLACK" strokeType="INSIDE">
+                                                         <HBox.margin>
+                                                            <Insets bottom="3.0" />
+                                                         </HBox.margin>
+                                                      </Circle>
+                                                      <Label fx:id="userStatus" text="Label" textFill="GREEN" />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                       </items>
+                                    </ToolBar>
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </top>
                   </BorderPane>
                   <BorderPane prefHeight="200.0" prefWidth="200.0">
                      <bottom>
@@ -86,6 +100,55 @@
                      <center>
                         <StackPane fx:id="rootMessages" style="-fx-background-color: #222;" stylesheets="@../style/listView.css" BorderPane.alignment="CENTER" />
                      </center>
+                     <top>
+                        <HBox prefHeight="45.0" prefWidth="200.0" BorderPane.alignment="CENTER_LEFT">
+                           <children>
+                              <ToolBar maxHeight="-Infinity" prefHeight="45.0" prefWidth="179.0" HBox.hgrow="ALWAYS">
+                                 <items>
+                                    <ImageView fitHeight="30.0" fitWidth="86.0" pickOnBounds="true" preserveRatio="true">
+                                       <viewport>
+                                          <Rectangle2D />
+                                       </viewport>
+                                       <image>
+                                          <Image url="@../img/user-compte.png" />
+                                       </image>
+                                    </ImageView>
+                                    <VBox prefHeight="0.0" prefWidth="100.0">
+                                       <children>
+                                          <Label fx:id="salaName" text="Label" textFill="WHITE" />
+                                          <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0">
+                                             <children>
+                                                <Circle fill="#03e103" radius="5.0" stroke="BLACK" strokeType="INSIDE">
+                                                   <HBox.margin>
+                                                      <Insets bottom="3.0" />
+                                                   </HBox.margin>
+                                                </Circle>
+                                                <Label fx:id="salaStatus" text="Label" textFill="GREEN" />
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+                                 </items>
+                              </ToolBar>
+                              <HBox alignment="CENTER_RIGHT" prefHeight="40.0" prefWidth="97.0">
+                                 <children>
+                                    <JFXButton prefHeight="32.0" prefWidth="20.0" textFill="RED" textOverrun="CLIP">
+                                       <graphic>
+                                          <ImageView fitHeight="24.0" fitWidth="33.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-color: red;">
+                                             <image>
+                                                <Image url="@../img/Ellipsis-v-01.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </JFXButton>
+                                 </children>
+                                 <padding>
+                                    <Insets right="5.0" />
+                                 </padding>
+                              </HBox>
+                           </children>
+                        </HBox>
+                     </top>
                   </BorderPane>
                </items>
             </SplitPane>

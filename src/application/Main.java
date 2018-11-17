@@ -1,6 +1,7 @@
 package application;
 
 import java.io.File;
+import java.util.UUID;
 
 import controllers.HomeControllerView;
 import javafx.application.Application;
@@ -17,9 +18,7 @@ public class Main extends Application {
 	
 	@Override
 	public void start(Stage primaryStage) {
-		try {
-			
-			System.out.println("ewewe");
+		try {						
 			
 			//carrega FX xml da interfaçe principal
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/layout/Home.fxml"));

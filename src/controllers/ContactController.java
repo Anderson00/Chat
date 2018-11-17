@@ -15,6 +15,7 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -27,6 +28,7 @@ import javax.xml.bind.DatatypeConverter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import application.ApplicationSingleton;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
@@ -67,9 +69,10 @@ public class ContactController {
     private ListView<HBox> allMessages;
     private StackPane parent;
     private HomeControllerView controller;
+    private ApplicationSingleton application;
     
-    private Socket client;
-    private ServerSocket server;
+    private Socket server;
+    private String sala;
     private Thread connection = null;
     
     public boolean executed = false;
@@ -85,6 +88,7 @@ public class ContactController {
         assert removeContact != null : "fx:id=\"removeContact\" was not injected: check your FXML file 'UserList.fxml'.";
         
         allMessages = new ListView<HBox>();
+        application = ApplicationSingleton.instance;
                       
         EventHandler<Event> mouseClicked = event->{
         	contactSelected();
@@ -100,8 +104,7 @@ public class ContactController {
         	this.allMessages = null;
         });
       
-        connection = new Thread(new escutaTrasmissao());
-        
+        connection = new Thread(new escutaTrasmissao()); 
     }
     
     public void contactSelected(){
@@ -118,42 +121,22 @@ public class ContactController {
     	parent.getChildren().add(allMessages);
     }
     
-    public void setUser(HomeControllerView controller,String username, String ip, String porta){
-    	
+    public void setUser(HomeControllerView controller, String sala){    	
     	this.controller = controller;
     	this.parent = controller.rootMessages;
-    	usernameLB.setText(username);
-    	this.ip = ip;
-    	this.porta = porta;
-    	this.server = controller.server;
+    	usernameLB.setText(sala);
     	
     	try {
-			client = new Socket(this.ip, new Integer(this.porta));
-			System.out.println(client.isConnected());	
-						
-			//Envia nome do usuario			
-			OutputStreamWriter writer = new OutputStreamWriter(client.getOutputStream());
-			BufferedWriter wBuffer = new BufferedWriter(writer);
-			wBuffer.write(controller.getUserName()+"\r\n");
-			wBuffer.flush();
-		} catch (NumberFormatException | IOException e) {
+			server = new Socket(application.getIp(), application.getPorta());
+			enterRoom();
+			connection.start();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	
-    	connection.start();
-    }
-    
-    public void setUser(HomeControllerView controller,String username, String ip, Socket client){
-    	
-    	this.controller = controller;
-    	this.parent = controller.rootMessages;
-    	usernameLB.setText(username);
-    	this.ip = ip;
-    	this.server = controller.server;
-    	this.client = client;
-    	    			    	
-    	connection.start();
     }
     
     public void sendMessage(String msg){
@@ -169,134 +152,176 @@ public class ContactController {
     	if( !(formato.equals("jpg") || formato.equals("png")) )
     		return;
     		
-    	try{
-    		OutputStream out = client.getOutputStream();
-    		OutputStreamWriter writer = new OutputStreamWriter(out);
-    		
-    		JSONObject obj = new JSONObject();
-    		JSONArray arr = new JSONArray();
-    		InputStream imgStream = new FileInputStream(imgFile);
-    		byte bytes[] = Files.readAllBytes(imgFile.toPath());  		
-    		    		
-    		obj.put("msg", msg);
-    		obj.put("img", DatatypeConverter.printBase64Binary(bytes));
-    		
-    		System.out.println(obj.toString());
-    		writer.write(obj.toString()+"\r\n");
-    		writer.flush();
-    		
-    		printMessage(msg, new Image(imgStream),userMessage);   
-    	}catch(SocketException e){
-    		connected = false;
-    		this.conectionStatus.setFill(Color.RED);
-    	}
-    	catch(IOException e){
-    		e.printStackTrace();    		
-    	}
+    	new Thread(new enviaTrasmissao(msg, imgFile, userMessage)).start();
     }
     
-    private void sendMessage(String msg,boolean userMessage){    	
+    private void sendMessage(String msg,boolean userMessage){   
+    	JSONObject obj = new JSONObject();
     	try{
-    		OutputStreamWriter writer = new OutputStreamWriter(client.getOutputStream());
+    		OutputStreamWriter writer = new OutputStreamWriter(server.getOutputStream());
     		//BufferedWriter buffer = new BufferedWriter(writer);
     		
-    		JSONObject obj = new JSONObject();
     		obj.put("msg", msg);
+    		obj.put("user", controller.getUserName());
     		
-    		//writer.write(obj.toString()+"\r\n");    	
     		writer.write(obj.toString()+"\r\n");
     		writer.flush();
     		
     		System.out.println("Enviou Mensagem");
+    		   
     	}catch(SocketException e){
     		connected = false;
+    		obj.put("error", e.getMessage());
     		this.conectionStatus.setFill(Color.RED);
     	}
     	catch(IOException e){
     		e.printStackTrace();    		
     	}
     	
-    	printMessage(msg,userMessage);    	
+    	printMessage(obj, userMessage); 
     }
     
-    private void printMessage(String msg, boolean userMessage){
+    private void printMessage(JSONObject obj, boolean userMessage){
     	FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/layout/messageModel.fxml"));
     	try{
     		HBox box = loader.load();
     		allMessages.getItems().add(box);
     		MessagesController msgController = loader.getController();
-    		msgController.setMessage(msg, Calendar.getInstance().getTime(), !connected, userMessage);   
+    		msgController.setMessage(obj, userMessage);   
     	}catch(IOException e){
     		e.printStackTrace();
     	}
     }
     
-    private void printMessage(String msg, Image img,boolean userMessage){
-    	FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/layout/messageModel.fxml"));
-    	try{
-    		HBox box = loader.load();
-    		allMessages.getItems().add(box);
-    		MessagesController msgController = loader.getController();
-    		msgController.setMessage(msg, Calendar.getInstance().getTime(), img, !connected, userMessage);   
-    	}catch(IOException e){
-    		e.printStackTrace();
-    	}
+    private void enterRoom() {
+    	try {
+			OutputStreamWriter wrt = new OutputStreamWriter(server.getOutputStream());
+			BufferedReader reader = new BufferedReader(new InputStreamReader(server.getInputStream()));
+			JSONObject obj = new JSONObject();
+			obj.put("name", controller.getUserName());
+			wrt.write(obj.toString()+"\r\n");
+			wrt.flush();
+			
+			JSONObject msg = new JSONObject(reader.readLine());
+			String msgError = msg.getString("error");
+			if(msgError != null && msgError.length() == 0) {
+				//Entrou na sala sem problema
+				conectionStatus.setFill(Color.GREEN);
+				
+			}else {
+				//Não entrou na sala //msg de error explica o motivo
+				System.out.println("Error: "+msgError);
+				server.close();
+				conectionStatus.setFill(Color.RED);
+			}
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
-    
     
     private class escutaTrasmissao extends Task<String>{
 
 		@Override
 		protected String call() throws Exception {
 			// TODO Auto-generated method stub	
+			System.out.println("TASK INICIADO");
 			while(true){
-				System.out.println(">>>>>>>>>> "+client.isConnected());
-				if(client.isConnected()){
+				System.out.println("eiorgkoerkgoerkgoekrg " + server);
+				System.out.println(">>>>>>>>>> "+server.isConnected());
+				if(server.isConnected()){
 					conectionStatus.setFill(Color.GREEN);
 					connected = true;
-				}
-				InputStream input = client.getInputStream(); 
-				InputStreamReader reader = new InputStreamReader(client.getInputStream());
-				BufferedReader buffer = new BufferedReader(reader);				
+				}				
+				InputStreamReader reader = new InputStreamReader(server.getInputStream());
+				BufferedReader buffer = new BufferedReader(reader);			
+				
 				String msg = buffer.readLine();
-				
+				System.out.println(">>> " + msg);
 				JSONObject obj = new JSONObject(msg);
-				//BufferedImage imageBuffer = ImageIO.read(input)
-				if(obj.has("img")) {
-					String imgBase64 = obj.getString("img");
-					System.out.println();
-					
-					byte decodedImg[] = DatatypeConverter.parseBase64Binary(imgBase64);
-				
-					printMessage(obj.getString("msg"), new Image(new ByteArrayInputStream(decodedImg)));
-					continue;
-				}
-				printMessage(obj.getString("msg"));
+				printMessage(obj);
 				System.out.println(obj.toString());
 				
 			}
 		}
 		
-		private void printMessage(String message){
+		private void printMessage(JSONObject message){
 			Platform.runLater(() -> {
 				ContactController.this.printMessage(message, false);
 			});
 		}
 		
-		private void printMessage(String message,Image img){
-			Platform.runLater(() -> {
-				ContactController.this.printMessage(message, img, false);
-			});
-		}
 		@Override
-		protected void updateMessage(String message) {
+		protected void updateMessage(String message) {//CODIGO inutil
 			// TODO Auto-generated method stub
 			super.updateMessage(message);
 			Platform.runLater(() -> {
-				ContactController.this.printMessage(message, false);
+				ContactController.this.printMessage(new JSONObject(message), false);
 			});
 		}
     	
     }
     
+    private class enviaTrasmissao extends Task<String>{
+    	
+    	private String msg;
+    	private File imgFile;
+    	private boolean userMessage;
+    	
+    	public enviaTrasmissao(String msg, File imgFile, boolean userMessage) {
+    		this.msg = msg;
+    		this.imgFile = imgFile;
+    		this.userMessage = userMessage;
+    	}
+
+		@Override
+		protected String call() throws Exception {
+			// TODO Auto-generated method stub	
+			System.out.println("TASK INICIADO");
+			try{
+	    		OutputStream out = server.getOutputStream();
+	    		OutputStreamWriter writer = new OutputStreamWriter(out);
+	    		
+	    		JSONObject obj = new JSONObject();
+	    		JSONArray arr = new JSONArray();
+	    		InputStream imgStream = new FileInputStream(imgFile);
+	    		byte bytes[] = Files.readAllBytes(imgFile.toPath());  		
+	    		    		
+	    		obj.put("msg", msg);
+	    		obj.put("user", controller.getUserName());
+	    		obj.put("img", DatatypeConverter.printBase64Binary(bytes));
+	    		
+	    		System.out.println(obj.toString());
+	    		writer.write(obj.toString()+"\r\n");
+	    		writer.flush();
+	    		
+	    		ContactController.this.printMessage(obj, userMessage);   
+	    	}catch(SocketException e){
+	    		connected = false;
+	    		ContactController.this.conectionStatus.setFill(Color.RED);
+	    		return "Não enviado";
+	    	}
+	    	catch(IOException e){
+	    		e.printStackTrace();    		
+	    	}
+			return null;
+		}
+		
+		private void printMessage(JSONObject message){
+			Platform.runLater(() -> {
+				ContactController.this.printMessage(message, false);
+			});
+		}
+		
+		@Override
+		protected void updateMessage(String message) {//CODIGO inutil
+			// TODO Auto-generated method stub
+			super.updateMessage(message);
+			Platform.runLater(() -> {
+				ContactController.this.printMessage(new JSONObject(message), false);
+			});
+		}
+    	
+    }
 }

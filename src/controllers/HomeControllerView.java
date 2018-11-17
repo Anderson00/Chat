@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.net.BindException;
 import java.net.InetAddress;
@@ -23,6 +24,7 @@ import com.jfoenix.controls.JFXDialog;
 import com.jfoenix.controls.JFXDialogLayout;
 import com.jfoenix.controls.JFXTextField;
 
+import application.ApplicationSingleton;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -46,6 +48,8 @@ import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import jfxtras.labs.scene.control.BigDecimalField;
+import javafx.scene.shape.Circle;
+
 
 
 public class HomeControllerView {
@@ -62,13 +66,16 @@ public class HomeControllerView {
     private URL location;
 
     @FXML
-    private JFXButton btNewContact;
+    private JFXButton btNewContact, btAddContact;
 
     @FXML
     protected ListView<HBox> contactList;
 
     @FXML
     private TextField msgField;
+    
+    @FXML
+    private Label userName, userStatus, salaName, salaStatus;
 
     @FXML
     private JFXButton btSendMsg, btAddImage;
@@ -81,7 +88,7 @@ public class HomeControllerView {
     
     private Stage stage;
 
-    protected ServerSocket server;
+    protected Socket server;
     private Thread connection = null;
     
     private String nome = null;
@@ -94,7 +101,8 @@ public class HomeControllerView {
     void initialize() {
     	System.out.println(contactList.getChildrenUnmodifiable().size());
     	    	    	
-    	setServerPort();//Dialogo para inserir o nome e a porta do cliente
+    	ApplicationSingleton.instance.setIp("127.0.0.1");
+    	setServerPort();//Dialogo para inserir o ip e a porta do Server
 
         SplitPane.setResizableWithParent(splitPane.getItems().get(0), false);
                
@@ -123,6 +131,10 @@ public class HomeControllerView {
         	newContactDialog();
         });
         
+        btAddContact.setOnAction(e -> {
+        	addContactDialog();
+        });
+        
         //Adiciona imagem
         btAddImage.setOnAction(event -> {
         	FileChooser fileChooser = new FileChooser();
@@ -145,6 +157,7 @@ public class HomeControllerView {
     public void showImageDialog(Image img) {
     	StackPane stack = new StackPane();
     	ImageView imgView = new ImageView(img);
+    	Circle c = new Circle();
     	imgView.setPreserveRatio(true);
     	imgView.setFitWidth(800);
     	stack.getChildren().add(imgView);
@@ -202,27 +215,45 @@ public class HomeControllerView {
     	JFXDialog dialog = new JFXDialog(stackPane, layout, JFXDialog.DialogTransition.TOP);
     	btOk.setOnAction(event -> {   
     		nome = nameField.getText();
-    		try {
-    			server = new ServerSocket(new Integer(portField.getText()));
-    			if(stage!=null){
-        			stage.setTitle(nameField.getText()+"@"+server.getInetAddress().getHostAddress()+":"+portField.getText());
-        		}
-    			
-    			connection = new Thread(new ConnectionTask());
-        		connection.start();
-        		
-        		dialog.close();
-    		}catch(BindException e){
-    			dialog.close();
-    			this.msgError = e.getMessage();
-    			this.setServerPort();
-    		}
-    		catch (IOException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
-    		}
+    		userName.setText(nome);
+    		userStatus.setText("Conectado");
+    		//ApplicationSingleton.instance.setIp(nameField.getText());
+    		ApplicationSingleton.instance.setPorta(portField.getNumber().intValue());
+    		dialog.close();
     	});
     	dialog.setOverlayClose(false);
+    	dialog.show();
+    }
+    
+    private void addContactDialog() {
+    	JFXTextField salaNameField = new JFXTextField();
+    	
+    	salaNameField.setPromptText("name");
+    	salaNameField.setLabelFloat(true);
+    	salaNameField.setUnFocusColor(Color.GREEN);
+    	salaNameField.setFocusColor(Color.GREEN);
+    	        	
+    	
+    	VBox vbox = new VBox(salaNameField);
+    	vbox.setPadding(new Insets(10));
+    	
+    	Text title = new Text("ADD Room");
+    	title.setFont(new Font(14));
+    	title.setFill(Color.GREEN);
+    	
+    	JFXButton btOk = new JFXButton("Ok");
+    	JFXButton btCancel = new JFXButton("Cancel");
+    	
+    	JFXDialogLayout layout = new JFXDialogLayout();
+    	layout.setHeading(title);
+    	layout.setBody(vbox);
+    	layout.setActions(btOk, btCancel);
+    	JFXDialog dialog = new JFXDialog(stackPane, layout, JFXDialog.DialogTransition.TOP);
+    	btOk.setOnAction(event -> {
+    		createContact(salaNameField.getText());
+    		dialog.close();
+    	});
+    	btCancel.setOnAction(event -> dialog.close());
     	dialog.show();
     }
     
@@ -267,35 +298,20 @@ public class HomeControllerView {
     	layout.setActions(btOk, btCancel);
     	JFXDialog dialog = new JFXDialog(stackPane, layout, JFXDialog.DialogTransition.TOP);
     	btOk.setOnAction(event -> {
-    		createContact(nameField.getText(), ipField.getText(), portaField.getText());
-
+    		createContact(nameField.getText());
     		dialog.close();
     	});
     	btCancel.setOnAction(event -> dialog.close());
     	dialog.show();
     }
     
-    private void createContact(String name, String ip, String porta){
+    private void createContact(String sala){
     	FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/layout/UserList.fxml"));    		
 		try {
 			contactList.getItems().add(loader.load());
 			ContactController controller = loader.getController();
 			selectedContact = controller;
-			controller.setUser(this,name, ip, porta);
-			controller.contactSelected();				
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
-    
-    private void createContact(String name, String ip, Socket client){
-    	FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/layout/UserList.fxml"));    		
-		try {
-			contactList.getItems().add(loader.load());
-			ContactController controller = loader.getController();
-			selectedContact = controller;
-			controller.setUser(this,name, ip, client);
+			controller.setUser(this, sala);
 			controller.contactSelected();				
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -312,14 +328,15 @@ public class HomeControllerView {
 			// TODO Auto-generated method stub	
 			try{
 				while(true){
-					Socket client = server.accept();
-					System.out.println("Conectou");	
-					this.client = client;					
-					InputStreamReader reader = new InputStreamReader(client.getInputStream());
-					BufferedReader buffer = new BufferedReader(reader);
-					String msg = buffer.readLine();
-					updateMessage(msg);
-					System.out.println("Novo contato");
+					InputStreamReader reader = new InputStreamReader(server.getInputStream());
+					OutputStreamWriter writer = new OutputStreamWriter(server.getOutputStream());
+					JSONObject obj = new JSONObject();
+					obj.put("name", nome);
+					writer.write(obj.toString()+"\r\n");
+					writer.flush();
+					
+					BufferedReader breader = new BufferedReader(reader);					
+					updateMessage(breader.readLine());
 				}
 			}catch(Exception e){
 				e.printStackTrace();
@@ -331,13 +348,12 @@ public class HomeControllerView {
 		protected void updateMessage(String message) {
 			// TODO Auto-generated method stub
 			super.updateMessage(message);
-			
-			InetAddress address = client.getInetAddress();
+			JSONObject obj = new JSONObject(message);
+			String str = obj.getString("sala");
 			Platform.runLater(()->{
-				createContact(message, address.getHostAddress(), client);
+				createContact(str);
 			});
 		}
     	
     }
-    
 }
