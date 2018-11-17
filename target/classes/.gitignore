@@ -1,3 +1,10 @@
-/application/
 /controllers/
+/application/
 /resources/
+/snippet/
+/ApplicationSingleton.class
+/Main.class
+/SalaThread.class
+/Server.class
+/Status.class
+/UserThread.class
