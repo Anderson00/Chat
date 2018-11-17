@@ -21,7 +21,7 @@
    <children>
       <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" style="-fx-background-color: #0000;" stylesheets="@../style/main.css">
          <center>
-            <SplitPane fx:id="splitPane" dividerPositions="0.29431438127090304" prefHeight="160.0" prefWidth="200.0" style="-fx-background-color: #000;" BorderPane.alignment="CENTER">
+            <SplitPane fx:id="splitPane" dividerPositions="0.3322422258592471" prefHeight="160.0" prefWidth="200.0" style="-fx-background-color: #000;" BorderPane.alignment="CENTER">
                <items>
                   <BorderPane prefHeight="200.0" prefWidth="200.0">
                      <bottom>
@@ -29,6 +29,7 @@
                            <items>
                               <JFXButton fx:id="btNewContact" prefHeight="25.0" prefWidth="60.0" style="-fx-background-color: rgba(200,0,0,0.1);" text="New" textFill="RED" />
                               <JFXButton fx:id="btAddContact" prefHeight="25.0" prefWidth="60.0" style="-fx-background-color: rgba(200,0,0,0.1);" text="Add" textFill="RED" />
+                              <JFXButton fx:id="btShowRooms" prefHeight="25.0" prefWidth="60.0" style="-fx-background-color: rgba(200,0,0,0.1);" text="Rooms" textFill="RED" />
                            </items>
                         </ToolBar>
                      </bottom>

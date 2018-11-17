@@ -32,6 +32,18 @@ public class SalaThread extends Thread{
 		return stat;
 	}
 	
+	public String getSalaName() {
+		return salaName;
+	}
+	
+	public Status getSalaStatus() {
+		return salaStatus;
+	}
+	
+	public int numberOfUsers() {
+		return threadUsuarios.size();
+	}
+	
 	public void pause() {
 		if(salaStatus != Status.INITIATED)
 			salaStatus = Status.PAUSED;

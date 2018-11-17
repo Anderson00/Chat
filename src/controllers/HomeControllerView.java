@@ -66,7 +66,7 @@ public class HomeControllerView {
     private URL location;
 
     @FXML
-    private JFXButton btNewContact, btAddContact;
+    private JFXButton btNewContact, btAddContact, btShowRooms;
 
     @FXML
     protected ListView<HBox> contactList;
@@ -133,6 +133,10 @@ public class HomeControllerView {
         
         btAddContact.setOnAction(e -> {
         	addContactDialog();
+        });
+        
+        btShowRooms.setOnAction(e -> {
+        	showRoomsDialog();
         });
         
         //Adiciona imagem
@@ -257,35 +261,45 @@ public class HomeControllerView {
     	dialog.show();
     }
     
-    private void newContactDialog(){
-    	   	
-    	JFXTextField nameField = new JFXTextField();
-    	JFXTextField ipField = new JFXTextField();
-    	JFXTextField portaField = new JFXTextField();
+    void showRoomsDialog() {
+    	ListView<String> list = new ListView<String>();      	
+    	list.getStylesheets().add(getClass().getResource("../resources/style/listView2.css").toExternalForm());
+    	list.setStyle("-fx-background-color:#222;");
     	
-    	nameField.setPromptText("name");
-    	nameField.setLabelFloat(true);
-    	nameField.setUnFocusColor(Color.GREEN);
-    	nameField.setFocusColor(Color.GREEN);
-    	portaField.setPromptText("port");
-    	portaField.setLabelFloat(true);
-    	portaField.setUnFocusColor(Color.GREEN);
-    	portaField.setFocusColor(Color.GREEN);
-    	ipField.setPromptText("ex:127.0.0.1");
-    	ipField.setLabelFloat(true);
-    	ipField.setUnFocusColor(Color.GREEN);
-    	ipField.setFocusColor(Color.GREEN);
-    	        	
+    	new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				try {
+		    		
+					Socket s = new Socket(ApplicationSingleton.instance.getIp(), ApplicationSingleton.instance.getPorta());
+					OutputStreamWriter ss = new OutputStreamWriter(s.getOutputStream());
+					BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
+					JSONObject obj = new JSONObject();
+					obj.put("list", 0);
+					
+					ss.write(obj+"\r\n");
+					ss.flush();
+					
+					JSONObject ob = new JSONObject(reader.readLine());
+					System.out.println(ob.toString());
+					JSONArray arr = ob.getJSONArray("rooms");
+					for(int i = 0; i < arr.length(); i++) {
+						JSONObject obb = arr.getJSONObject(i);
+						list.getItems().add(obb.getString("room")+"("+obb.getInt("n")+")");
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}).start();
     	
-    	HBox hbox = new HBox(ipField,portaField);
-    	hbox.setSpacing(10);
-    	HBox.setHgrow(ipField, Priority.ALWAYS);
-    	
-    	VBox vbox = new VBox(nameField,hbox);
-    	vbox.setSpacing(20);
+    	VBox vbox = new VBox(list);
     	vbox.setPadding(new Insets(10));
     	
-    	Text title = new Text("Add Contact");
+    	Text title = new Text("ADD Room");
     	title.setFont(new Font(14));
     	title.setFill(Color.GREEN);
     	
@@ -298,11 +312,74 @@ public class HomeControllerView {
     	layout.setActions(btOk, btCancel);
     	JFXDialog dialog = new JFXDialog(stackPane, layout, JFXDialog.DialogTransition.TOP);
     	btOk.setOnAction(event -> {
-    		createContact(nameField.getText());
     		dialog.close();
     	});
     	btCancel.setOnAction(event -> dialog.close());
     	dialog.show();
+    }
+    
+    private void newContactDialog(){
+    	JFXTextField salaNameField = new JFXTextField();
+    	
+    	salaNameField.setPromptText("name");
+    	salaNameField.setLabelFloat(true);
+    	salaNameField.setUnFocusColor(Color.GREEN);
+    	salaNameField.setFocusColor(Color.GREEN);
+    	        	
+    	
+    	VBox vbox = new VBox(salaNameField);
+    	vbox.setPadding(new Insets(10));
+    	
+    	Text title = new Text("ADD Room");
+    	title.setFont(new Font(14));
+    	title.setFill(Color.GREEN);
+    	
+    	JFXButton btOk = new JFXButton("Ok");
+    	JFXButton btCancel = new JFXButton("Cancel");
+    	
+    	JFXDialogLayout layout = new JFXDialogLayout();
+    	layout.setHeading(title);
+    	layout.setBody(vbox);
+    	layout.setActions(btOk, btCancel);
+    	JFXDialog dialog = new JFXDialog(stackPane, layout, JFXDialog.DialogTransition.TOP);
+    	btOk.setOnAction(event -> {
+    		createContact(salaNameField.getText(), true);
+    		dialog.close();
+    	});
+    	btCancel.setOnAction(event -> dialog.close());
+    	dialog.show();
+    }
+    
+    public void showErrorDialog(String error) {    	
+    	Text title = new Text("Error");
+    	title.setFont(new Font(14));
+    	title.setFill(Color.GREEN);
+    	
+    	JFXButton btOk = new JFXButton("Ok");
+    	
+    	JFXDialogLayout layout = new JFXDialogLayout();
+    	layout.setHeading(title);
+    	layout.setBody(new Label(error));
+    	layout.setActions(btOk);
+    	JFXDialog dialog = new JFXDialog(stackPane, layout, JFXDialog.DialogTransition.TOP);
+    	btOk.setOnAction(event -> {
+    		dialog.close();
+    	});
+    	dialog.show();
+    }
+    
+    private void createContact(String sala, boolean novo) {
+    	FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/layout/UserList.fxml"));    		
+		try {
+			contactList.getItems().add(loader.load());
+			ContactController controller = loader.getController();
+			selectedContact = controller;
+			controller.setUser(this, sala,novo);
+			controller.contactSelected();				
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
     
     private void createContact(String sala){

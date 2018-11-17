@@ -121,6 +121,47 @@ public class ContactController {
     	parent.getChildren().add(allMessages);
     }
     
+    public void setUser(HomeControllerView controller, String sala, boolean novo) {
+    	if(novo) {
+    		try {
+    			Socket server = new Socket(application.getIp(), application.getPorta());
+    			new Thread(new Runnable() {
+					
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						try {
+							OutputStreamWriter writer = new OutputStreamWriter(server.getOutputStream());
+							BufferedReader reader = new BufferedReader(new InputStreamReader(server.getInputStream()));
+							JSONObject obj = new JSONObject();
+							obj.put("add", sala);
+							obj.put("name", controller.getUserName());
+							
+							writer.write(obj.toString()+"\r\n");
+							writer.flush();
+							
+							JSONObject received = new JSONObject(reader.readLine());
+							if(received.has("error")) {
+								application.showErrorDialog(received.getString("error"));
+							}else {
+								setUser(controller, sala);
+							}
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}).start();
+    		} catch (UnknownHostException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		} catch (IOException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    	}    	    	
+    }
+    
     public void setUser(HomeControllerView controller, String sala){    	
     	this.controller = controller;
     	this.parent = controller.rootMessages;

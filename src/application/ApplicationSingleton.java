@@ -15,6 +15,10 @@ public class ApplicationSingleton {
 		homeController.showImageDialog(img);
 	}
 	
+	public void showErrorDialog(String error) {
+		homeController.showErrorDialog(error);
+	}
+	
 	public String getIp() {
 		return ip;
 	}
