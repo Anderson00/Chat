@@ -10,6 +10,9 @@ import java.util.UUID;
 
 import org.json.JSONObject;
 
+import interfaces.StatusCallback;
+import model.Status;
+
 public class UserThread extends Thread{
 	
 	private Socket user;
@@ -21,20 +24,25 @@ public class UserThread extends Thread{
 	private OutputStream out;
 	private InputStream in;
 	
+	private StatusCallback statusCallback;
+	
 	public UserThread(Socket socket, SalaThread parent,String name, UUID uuid) {
 		this.user = socket;
 		this.name = name;
 		this.uuid = uuid;		
 		this.parent = parent;
 		status = Status.INITIATED;
+		callStatusCallback();
 	}
 	
 	public void stopUser() {
 		status = Status.PAUSED;
+		callStatusCallback();
 	}
 	
 	public void killUser() {
 		status = Status.FINISHED;
+		callStatusCallback();
 	}
 	
 	public Socket getSocket() {
@@ -54,6 +62,15 @@ public class UserThread extends Thread{
 		}finally {
 			return false;
 		}		
+	}
+	
+	public void registerStatusCallBack(StatusCallback callback) {
+		this.statusCallback = callback;
+	}
+	
+	private void callStatusCallback() {
+		if(statusCallback != null)
+			statusCallback.call(status, uuid);
 	}
 
 	@Override
@@ -85,7 +102,9 @@ public class UserThread extends Thread{
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		};
+		}finally {
+			killUser();
+		}
 	}
 
 }

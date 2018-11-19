@@ -16,6 +16,8 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import javax.swing.plaf.SeparatorUI;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -369,17 +371,21 @@ public class HomeControllerView {
     }
     
     private void createContact(String sala, boolean novo) {
-    	FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/layout/UserList.fxml"));    		
-		try {
-			contactList.getItems().add(loader.load());
-			ContactController controller = loader.getController();
-			selectedContact = controller;
-			controller.setUser(this, sala,novo);
-			controller.contactSelected();				
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    	if(novo) {
+	    	FXMLLoader loader = new FXMLLoader(getClass().getResource("../resources/layout/UserList.fxml"));    		
+			try {
+				contactList.getItems().add(loader.load());
+				ContactController controller = loader.getController();
+				selectedContact = controller;
+				controller.setUser(this, sala,novo);
+				controller.contactSelected();				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}else {
+    		createContact(sala);
+    	}
     }
     
     private void createContact(String sala){

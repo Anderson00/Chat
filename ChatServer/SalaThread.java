@@ -1,8 +1,11 @@
 
+import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
+
+import model.Status;
 
 public class SalaThread extends Thread{
 	
@@ -26,9 +29,21 @@ public class SalaThread extends Thread{
 	public boolean addUsuarios(Socket user, String name) {
 		UUID uuid = UUID.nameUUIDFromBytes(name.getBytes());
 		UserThread usr = new UserThread(user, this, name, uuid);
+		usr.registerStatusCallBack( (stat, id) ->{
+			if(stat == Status.FINISHED) {
+				threadUsuarios.remove(id);
+			}
+		});
 		boolean stat = threadUsuarios.put(uuid, usr) == null;
 		if(stat)
 			usr.start();
+		else
+			try {
+				user.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		return stat;
 	}
 	

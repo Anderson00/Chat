@@ -9,7 +9,9 @@ import org.json.JSONObject;
 
 public class ApplicationSingleton {	
 	private static final ApplicationSingleton instance = new ApplicationSingleton();
-	HashMap<UUID, SalaThread> salas;
+	
+	private HashMap<UUID, SalaThread> salas;
+	private SalaThread salaTeste;
 	
 	private ApplicationSingleton() {
 		salas = new HashMap<UUID, SalaThread>();
@@ -19,6 +21,14 @@ public class ApplicationSingleton {
 		if(salas.put(uuid, sala) == null)
 			return true;
 		return false;
+	}
+	
+	public SalaThread getSalaTeste() {
+		return salaTeste;
+	}
+	
+	public void setSalaTeste(SalaThread salaTeste) {
+		this.salaTeste = salaTeste;
 	}
 	
 	public boolean entrarNaSala(Socket client,JSONObject obj) {		

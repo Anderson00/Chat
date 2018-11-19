@@ -123,14 +123,17 @@ public class ContactController {
     
     public void setUser(HomeControllerView controller, String sala, boolean novo) {
     	if(novo) {
-    		try {
-    			Socket server = new Socket(application.getIp(), application.getPorta());
+    		ContactController.this.controller = controller;
+			ContactController.this.parent = controller.rootMessages;
+        	usernameLB.setText(sala);
+    		    			
     			new Thread(new Runnable() {
 					
 					@Override
 					public void run() {
 						// TODO Auto-generated method stub
 						try {
+							server = new Socket(application.getIp(), application.getPorta());
 							OutputStreamWriter writer = new OutputStreamWriter(server.getOutputStream());
 							BufferedReader reader = new BufferedReader(new InputStreamReader(server.getInputStream()));
 							JSONObject obj = new JSONObject();
@@ -141,25 +144,23 @@ public class ContactController {
 							writer.flush();
 							
 							JSONObject received = new JSONObject(reader.readLine());
+							System.out.println("Received: " + received);
 							if(received.has("error")) {
 								application.showErrorDialog(received.getString("error"));
 							}else {
-								setUser(controller, sala);
+								connection.start();
+								conectionStatus.setFill(Color.GREEN);
 							}
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
+							System.out.println("Error");
 							e.printStackTrace();
-						}
+						}  	 
 					}
-				}).start();
-    		} catch (UnknownHostException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
-    		} catch (IOException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
-    		}
-    	}    	    	
+				}).start();    		
+    	}else {
+    		setUser(controller, sala);
+    	}
     }
     
     public void setUser(HomeControllerView controller, String sala){    	
@@ -169,7 +170,7 @@ public class ContactController {
     	
     	try {
 			server = new Socket(application.getIp(), application.getPorta());
-			enterRoom();
+			enterRoom(sala);
 			connection.start();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
@@ -234,26 +235,23 @@ public class ContactController {
     	}
     }
     
-    private void enterRoom() {
+    private void enterRoom(String room) {
     	try {
 			OutputStreamWriter wrt = new OutputStreamWriter(server.getOutputStream());
 			BufferedReader reader = new BufferedReader(new InputStreamReader(server.getInputStream()));
 			JSONObject obj = new JSONObject();
+			obj.put("salaName", room);
 			obj.put("name", controller.getUserName());
 			wrt.write(obj.toString()+"\r\n");
 			wrt.flush();
 			
 			JSONObject msg = new JSONObject(reader.readLine());
-			String msgError = msg.getString("error");
-			if(msgError != null && msgError.length() == 0) {
-				//Entrou na sala sem problema
-				conectionStatus.setFill(Color.GREEN);
-				
-			}else {
-				//Não entrou na sala //msg de error explica o motivo
-				System.out.println("Error: "+msgError);
+			if(msg.has("error")) {
 				server.close();
 				conectionStatus.setFill(Color.RED);
+				application.showErrorDialog(msg.getString("error"));
+			}else {
+				conectionStatus.setFill(Color.GREEN);
 			}
 			
 		} catch (IOException e) {
