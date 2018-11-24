@@ -3,10 +3,10 @@
 /SalaThread.class
 /Server.class
 /ServerThread.class
-/Status.class
 /UserThread.class
 /application/
 /controllers/
-/resources/
 /interfaces/
 /model/
+/resources/
+/__init__.py
