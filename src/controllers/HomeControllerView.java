@@ -264,7 +264,7 @@ public class HomeControllerView {
     }
     
     void showRoomsDialog() {
-    	ListView<String> list = new ListView<String>();      	
+    	ListView<String> list = new ListView<String>();
     	list.getStylesheets().add(getClass().getResource("../resources/style/listView2.css").toExternalForm());
     	list.setStyle("-fx-background-color:#222;");
     	
@@ -314,6 +314,11 @@ public class HomeControllerView {
     	layout.setActions(btOk, btCancel);
     	JFXDialog dialog = new JFXDialog(stackPane, layout, JFXDialog.DialogTransition.TOP);
     	btOk.setOnAction(event -> {
+    		String selected = list.getSelectionModel().getSelectedItem();    		
+    		if(selected != null) {
+    			String sala = selected.split("\\(")[0];
+    			createContact(sala);
+    		}
     		dialog.close();
     	});
     	btCancel.setOnAction(event -> dialog.close());

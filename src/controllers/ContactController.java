@@ -253,6 +253,7 @@ public class ContactController {
 			}else {
 				conectionStatus.setFill(Color.GREEN);
 			}
+			System.out.println(msg.toString());
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -317,12 +318,13 @@ public class ContactController {
 		@Override
 		protected String call() throws Exception {
 			// TODO Auto-generated method stub	
+			JSONObject obj;
 			System.out.println("TASK INICIADO");
 			try{
 	    		OutputStream out = server.getOutputStream();
 	    		OutputStreamWriter writer = new OutputStreamWriter(out);
 	    		
-	    		JSONObject obj = new JSONObject();
+	    		obj = new JSONObject();
 	    		JSONArray arr = new JSONArray();
 	    		InputStream imgStream = new FileInputStream(imgFile);
 	    		byte bytes[] = Files.readAllBytes(imgFile.toPath());  		
@@ -335,11 +337,13 @@ public class ContactController {
 	    		writer.write(obj.toString()+"\r\n");
 	    		writer.flush();
 	    		
-	    		ContactController.this.printMessage(obj, userMessage);   
+	    		printMessage(obj);		
+	    		
+	    		return obj.toString();
 	    	}catch(SocketException e){
 	    		connected = false;
 	    		ContactController.this.conectionStatus.setFill(Color.RED);
-	    		return "Não enviado";
+	    		return "Nï¿½o enviado";
 	    	}
 	    	catch(IOException e){
 	    		e.printStackTrace();    		
@@ -349,7 +353,7 @@ public class ContactController {
 		
 		private void printMessage(JSONObject message){
 			Platform.runLater(() -> {
-				ContactController.this.printMessage(message, false);
+				ContactController.this.printMessage(message, true);
 			});
 		}
 		

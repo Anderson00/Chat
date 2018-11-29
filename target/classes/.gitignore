@@ -1,10 +1,10 @@
+/application/
 /ApplicationSingleton.class
 /Main.class
 /SalaThread.class
 /Server.class
 /ServerThread.class
 /UserThread.class
-/application/
 /controllers/
 /interfaces/
 /model/
