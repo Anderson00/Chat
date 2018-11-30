@@ -66,15 +66,12 @@ class MySocket:
     def __init__(self, sock):
             self.sock = sock
 
-    def mysend(self, msg):
-        totalsent = 0
-        while totalsent < MSGLEN:
-            sent = self.sock.send(msg[totalsent:])
-            if sent == 0:
-                raise RuntimeError("socket connection broken")
-            totalsent = totalsent + sent
+    def sendReply(self, msg):
+        sent = self.sock.send(msg)
+        if sent == 0:
+            raise RuntimeError("socket connection broken")
 
-    def myreceive(self):
+    def getRequest(self):
         chunks = []
         msg = ""
         while not(("}\r\n" in msg) or "}" in msg):
@@ -103,10 +100,11 @@ class SalaThread(threading.Thread):
         id = uuid.uuid3(uuid.NAMESPACE_DNS, name)
         if(id in self.threadUsuarios):
             return False
-        user = UserThread(client, self, name, id)
+        user = UserThread(MySocket(client), self, name, id)
         self.threadUsuarios[id] = user
         def call(stat, id):
-            if(self.stat == STATUS[3]): 
+            if(stat == STATUS[3]): 
+                print("retirado")
                 self.threadUsuarios.pop(id)
 
         user.registerStatusCallBack(call)        
@@ -138,7 +136,8 @@ class SalaThread(threading.Thread):
             if(self.status == STATUS[1]):
                 self.pauseUsersThread()
                 continue
-
+            
+                    
     def pauseUsersThread(self):
         for id in self.threadUsuarios:
             self.threadUsuarios[id].stopUser()
@@ -166,17 +165,20 @@ class UserThread(threading.Thread):
         
     def stopUser(self):  
         self.status = STATUS[1]
+        self.callStatusCallback()
         
     def killUser(self):
         self.status = STATUS[3]
+        self.callStatusCallback()
         
     def getSocket(self):
-        self.client
+        return self.client.sock
         
     def sendMsg(self, msg):
         try:
             #self.client.wfile.write(msg)
-            self.client.send((msg+"\r\n").encode("utf-8"))
+            #self.client.send((msg+"\r\n").encode("utf-8"))
+            self.client.sendReply((msg+"\r\n").encode("utf-8"))
             print(self.name + " msg enviada")
             return True
         except BaseException as error:
@@ -205,10 +207,11 @@ class UserThread(threading.Thread):
                 #buff = self.client.rfile.readline().decode("utf-8")
                 try:
                     #buff = self.client.recv(4096).decode("utf-8")
-                    buff = MySocket(self.client).myreceive().decode("utf-8")
+                    buff = self.client.getRequest().decode("utf-8")
                 except BaseException as error:
                     print(error)
                     print(self.client)
+                    self.killUser()
                     break
     
                 print("["+self.name+"]:"+buff) 
@@ -219,17 +222,7 @@ class UserThread(threading.Thread):
                 self.parent.messageAll(self.id, json.dumps(obj))
         except BaseException as error:
             print(error)
-        self.client.close()
-                
-
-class Nada(threading.Thread):
-    def __init__(self, socket):
-        threading.Thread.__init__(self)
-        self.socket = socket
-    
-    def run(self):
-        while True:
-            print(type(self.socket.rfile))
+        self.client.sock.close()
 
         
 SalaThread("teste") #Sala para realizar testes
