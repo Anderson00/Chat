@@ -65,7 +65,6 @@ class MySocket:
 
     def __init__(self, sock):
             self.sock = sock
-            sock.setblocking(False)
 
     def mysend(self, msg):
         totalsent = 0
@@ -77,9 +76,16 @@ class MySocket:
 
     def myreceive(self):
         chunks = []
-        bytes_recd = 0
-        chunks.append(self.sock.recv(1024))
-        return b''.join(chunks)
+        msg = ""
+        while not(("}\r\n" in msg) or "}" in msg):
+            rec = self.sock.recv(1024)
+            if(rec == 0):
+                print("Error")
+                raise RuntimeError("socket connection broken")
+            msg += rec.decode("utf-8")
+            print("received: "+msg)   
+        print("received: "+msg)            
+        return msg.encode("utf-8")
 
 class SalaThread(threading.Thread):
     def __init__(self, salaName):
@@ -186,28 +192,35 @@ class UserThread(threading.Thread):
             
     def run(self):
         self.status = STATUS[2] #RUNNING
-        while True:
-            if(self.status == STATUS[3]): break
-            if(self.status == STATUS[1]):
-                continue
-            #print("<><><><><> "+type(self.client.rfile))
-            print("esperando msg do usuario")
-            
-            buff = ""
-            print(type(self.client))
-            #buff = self.client.rfile.readline().decode("utf-8")
-            try:
-                buff = self.client.recv(1024).decode("utf-8")
-            except BaseException as error:
-                print(error)
-                print(self.client)
-
-            print("["+self.name+"]:"+buff) 
-            if(buff != ""):
-                obj = json.loads(buff)
-                obj["user"] = self.name
-
-            self.parent.messageAll(self.id, json.dumps(obj))
+        try:
+            while True:
+                if(self.status == STATUS[3]): break
+                if(self.status == STATUS[1]):
+                    continue
+                #print("<><><><><> "+type(self.client.rfile))
+                print("esperando msg do usuario")
+                
+                buff = ""
+                print(type(self.client))
+                #buff = self.client.rfile.readline().decode("utf-8")
+                try:
+                    #buff = self.client.recv(4096).decode("utf-8")
+                    buff = MySocket(self.client).myreceive().decode("utf-8")
+                except BaseException as error:
+                    print(error)
+                    print(self.client)
+                    break
+    
+                print("["+self.name+"]:"+buff) 
+                if(buff != ""):
+                    obj = json.loads(buff)
+                    obj["user"] = self.name
+                    
+                self.parent.messageAll(self.id, json.dumps(obj))
+        except BaseException as error:
+            print(error)
+        self.client.close()
+                
 
 class Nada(threading.Thread):
     def __init__(self, socket):

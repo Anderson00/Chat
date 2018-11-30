@@ -1,4 +1,5 @@
 import socketserver
+import socket
 import threading
 import json
 import sys
@@ -31,6 +32,11 @@ def adicionarSala(id, salaThr):
     salaThr.start()
     return True
 
+def getSala(id):
+    if(id in salas):
+        return salas[id]
+    return None
+
 def entrarNaSala(client, jsobj):
     if("salaName" in jsobj and "name" in jsobj):
         id = uuid.uuid3(uuid.NAMESPACE_DNS, jsobj["salaName"])
@@ -59,7 +65,6 @@ class MySocket:
 
     def __init__(self, sock):
             self.sock = sock
-            sock.setblocking(False)
 
     def mysend(self, msg):
         totalsent = 0
@@ -71,14 +76,16 @@ class MySocket:
 
     def myreceive(self):
         chunks = []
-        bytes_recd = 0
-        while True:
-            chunk = self.sock.recv(2048)
-            if chunk == b'':
-                break
-            chunks.append(chunk)
-            bytes_recd = bytes_recd + len(chunk)
-        return b''.join(chunks)
+        msg = ""
+        while not(("}\r\n" in msg) or "}" in msg):
+            rec = self.sock.recv(1024)
+            if(rec == 0):
+                print("Error")
+                raise RuntimeError("socket connection broken")
+            msg += rec.decode("utf-8")
+            print("received: "+msg)   
+        print("received: "+msg)            
+        return msg.encode("utf-8")
 
 class SalaThread(threading.Thread):
     def __init__(self, salaName):
@@ -96,7 +103,7 @@ class SalaThread(threading.Thread):
         id = uuid.uuid3(uuid.NAMESPACE_DNS, name)
         if(id in self.threadUsuarios):
             return False
-        user = UserThread(MySocket(client), self, name, id)
+        user = UserThread(client, self, name, id)
         self.threadUsuarios[id] = user
         def call(stat, id):
             if(self.stat == STATUS[3]): 
@@ -142,7 +149,7 @@ class SalaThread(threading.Thread):
 
     def messageAll(self, id, msg):
         for uid in self.threadUsuarios:
-            if(uid == id):
+            if(uid != id):
                 self.threadUsuarios[uid].sendMsg(msg)
 
 
@@ -169,7 +176,7 @@ class UserThread(threading.Thread):
     def sendMsg(self, msg):
         try:
             #self.client.wfile.write(msg)
-            self.client.mysend(msg)
+            self.client.send((msg+"\r\n").encode("utf-8"))
             print(self.name + " msg enviada")
             return True
         except BaseException as error:
@@ -185,23 +192,35 @@ class UserThread(threading.Thread):
             
     def run(self):
         self.status = STATUS[2] #RUNNING
-        while True:
-            if(self.status == STATUS[3]): break
-            if(self.status == STATUS[1]):
-                continue
-            #print("<><><><><> "+type(self.client.rfile))
-            print("esperando msg do usuario")
-            
-            buff = ""
-            print(type(self.client))
-            #buff = self.client.rfile.readline().decode("utf-8")
-            buff = self.client.myreceive().decode("utf-8")
-            print("["+self.name+"]:"+buff)
-            
-            obj = json.loads(buff)
-            obj["user"] = self.name
-
-            self.parent.messageAll(self.id, obj.encode("utf-8"))
+        try:
+            while True:
+                if(self.status == STATUS[3]): break
+                if(self.status == STATUS[1]):
+                    continue
+                #print("<><><><><> "+type(self.client.rfile))
+                print("esperando msg do usuario")
+                
+                buff = ""
+                print(type(self.client))
+                #buff = self.client.rfile.readline().decode("utf-8")
+                try:
+                    #buff = self.client.recv(4096).decode("utf-8")
+                    buff = MySocket(self.client).myreceive().decode("utf-8")
+                except BaseException as error:
+                    print(error)
+                    print(self.client)
+                    break
+    
+                print("["+self.name+"]:"+buff) 
+                if(buff != ""):
+                    obj = json.loads(buff)
+                    obj["user"] = self.name
+                    
+                self.parent.messageAll(self.id, json.dumps(obj))
+        except BaseException as error:
+            print(error)
+        self.client.close()
+                
 
 class Nada(threading.Thread):
     def __init__(self, socket):
@@ -212,47 +231,45 @@ class Nada(threading.Thread):
         while True:
             print(type(self.socket.rfile))
 
-
-class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
-
-    def handle(self):
-        #try:
-        msg = self.rfile.readline().decode("utf-8")
-        obj = json.loads(msg) #json object
-        error = ""
-        if("add" in obj and "name" in obj):
-            st = SalaThread(obj["add"]);
-            if(st.getSalaStatus() == STATUS[4]):
-                error = "Sala já existe"
-            else:
-                st.addUsuarios(self.request, obj["name"])
-        elif("salaName" in obj and "name" in obj):
-            if(not entrarNaSala(self.request, obj)):
-                error = "Sala não existe"
-        elif("list" in obj):     
-            self.wfile.write(getSalasList().encode("utf-8"))
-        else:
-            pass
-
-        if(len(error) != 0):
-            obj["error"] = error
-            self.wfile.write(json.dumps(obj).encode("utf-8"))
-            self.wfile.flush()
-            return
-        else:
-            obj["success"] = 1
-            self.wfile.write(json.dumps(obj).encode("utf-8"))
-            self.wfile.flush()            
-            
-        #except BaseException as error:
-        #    print(error)  
-        
-
-class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-    pass
         
 SalaThread("teste") #Sala para realizar testes
 print(getSalasList());
-server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
-threading.Thread(target=server.serve_forever).start()
 
+def ServerThread(sock):
+    msg = sock.recv(2048).decode("utf-8")
+    obj = json.loads(msg) #json object
+    error = ""
+    if("add" in obj and "name" in obj):
+        st = SalaThread(obj["add"])
+        if(st.getSalaStatus() == STATUS[4]):
+            error = "Sala já existe"
+        else:
+            st.addUsuarios(sock, obj["name"])
+    elif("salaName" in obj and "name" in obj):
+        if(not entrarNaSala(sock, obj)):
+            error = "Sala não existe"
+        else:
+            getSala(uuid.uuid3(uuid.NAMESPACE_DNS, obj["salaName"]))
+    elif("list" in obj):     
+        sock.send(getSalasList().encode("utf-8"))
+    else:
+        pass
+
+    if(len(error) != 0):
+        obj["error"] = error
+        sock.send((json.dumps(obj)+"\r\n").encode("utf-8"))
+        return
+    else:
+        obj["success"] = 1
+        sock.send((json.dumps(obj)+"\r\n").encode("utf-8"))
+
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+s.bind((HOST, PORT))
+
+s.listen()
+
+while True:
+    conn, addr = s.accept()
+    print("{} conectou".format(addr))
+    threading.Thread(target=ServerThread, args=[conn]).start()

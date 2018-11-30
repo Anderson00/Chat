@@ -42,7 +42,7 @@ public class Main extends Application {
 	}
 	
 	public static void main(String[] args) {
-		launch(args); //JAVAFXsd
+		launch(args); //JAVAFX START
 	}
 	
     private static String findJarParentPath(File jarFile)// Nao utilizado
